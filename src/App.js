@@ -17,6 +17,9 @@ import AlumnoLayout from './layouts/AlumnoLayout';
 import CajeroLayout from './layouts/CajeroLayout';
 import AdminLayout from './layouts/AdminLayout';
 import CajeroSidebar from './components/CajeroSidebar'; 
+import RegistroPagosAdmin from './pages/admin/RegistroPagoAdmin';
+import RevisarComprobantesCajero from './pages/cajero/RevisarComprobantesCajero';
+import RegistroActividadesCajero from './pages/cajero/RegistroActividadesCajero';
 
 
 
@@ -42,12 +45,12 @@ function App() {
             <Route path="/historial-pagos" element={<HistorialPagos />} />
             <Route path="/admin/revisar-comprobantes" element={<RevisarComprobantes />} />
             <Route path="/admin/registro-actividades" element={<RegistroActividades />} />
-            <Route path="/admin/registro-pagos" element={<RegistroPagos />} />
+            <Route path="/admin/registro-pagos" element={<RegistroPagosAdmin />} />
             <Route path="/admin/reportes" element={<Reportes />} />
             <Route path="/cajero" element={<CajeroPage />} />
             <Route path="/cajero/registro-pagos" element={<RegistroPagos />} />
-            <Route path="/cajero/registro-actividades" element={<RegistroActividades />} />
-            <Route path="/cajero/revisar-comprobantes" element={<RevisarComprobantes />} />
+            <Route path="/cajero/registro-actividades" element={<RegistroActividadesCajero />} />
+            <Route path="/cajero/revisar-comprobantes" element={<RevisarComprobantesCajero />} />
           </Routes>
         </div>
       </div>

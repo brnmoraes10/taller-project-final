@@ -1,9 +1,6 @@
 import React, { useState } from "react";
-import AdminLayout from "../../layouts/CajeroLayout";
+import AdminLayout from "../../layouts/AdminLayout";
 import { FaEye, FaPlusCircle, FaCreditCard, FaBan, FaEdit } from "react-icons/fa";
-import CajeroLayout from "../../layouts/CajeroLayout";
-import Hero from "../../components/Hero";
-import logo from '../../image/instituto.png'
 
 const alumnosDummy = [
   { id: 1, nombre: "Juan Pérez", dni: "12345678" },
@@ -294,14 +291,11 @@ export default function RegistroPagos() {
   const usuarios = [...new Set(pagos.map((p) => p.usuario))];
 
   return (
-    <CajeroLayout>
-      <div className="container mt-4">
-            <Hero
-              image={logo}
-              imageAlt="Registro de Pago"
-              title="Registro de Pago"
-              subtitle="Registra Pago y controla las actividades registradas fácilmente"
-            />
+    <AdminLayout>
+      <div className="container mt-5">
+        <h2 className="text-center mb-4 text-uppercase text-primary fw-bold">
+          Registro de Pagos
+        </h2>
 
         {/* FORMULARIO DE NUEVO / EDICIÓN */}
         <div className="card shadow-sm mb-4">
@@ -731,6 +725,6 @@ export default function RegistroPagos() {
           </div>
         )}
       </div>
-    </CajeroLayout>
+    </AdminLayout>
   );
 }

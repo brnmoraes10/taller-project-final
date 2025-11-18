@@ -1,0 +1,23 @@
+<h1>Iniciar sesión</h1>
+<form method="post">
+  {% csrf_token %}
+  {% if error %}
+    <p style="color:red">{{ error }}</p>
+  {% endif %}
+  
+  <div>
+    <label>Usuario</label>
+    <input type="text" name="username" autocomplete="username">
+  </div>
+
+  <div>
+    <label>Contraseña</label>
+    <input type="password" name="password" autocomplete="current-password">
+  </div>
+
+  <button type="submit">Entrar</button>
+</form>
+
+<p>¿No tenés cuenta?
+  <a href="{% url 'registro' %}">Crear una cuenta</a>
+</p>

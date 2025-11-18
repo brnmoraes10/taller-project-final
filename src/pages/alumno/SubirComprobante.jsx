@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import AlumnoLayout from '../../layouts/AlumnoLayout';
 import { FaCcPaypal, FaStripe } from 'react-icons/fa';
 import { SiMercadopago } from 'react-icons/si';
 
@@ -48,7 +47,6 @@ export default function SubirComprobante() {
   };
 
   return (
-    <AlumnoLayout>
       <div className="container mt-5">
         <h2 className="text-center mb-4">Subir Comprobante de Pago</h2>
 
@@ -154,6 +152,5 @@ export default function SubirComprobante() {
           </button>
         </form>
       </div>
-    </AlumnoLayout>
   );
 }

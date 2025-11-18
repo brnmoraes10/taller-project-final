@@ -21,4 +21,5 @@ urlpatterns = [
     path('estado-cuenta/', EstadoCuentaView.as_view(), name='estado_cuenta'),
     path('cajero/', CajeroView.as_view(), name='cajero_data'),
     path('admin/', AdminView.as_view(), name='admin_data'),
+    path('pagos/', EstadoCuentaView.as_view(), name='pagos'),
 ]

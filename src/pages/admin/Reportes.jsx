@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import AdminLayout from '../../layouts/AdminLayout';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -175,7 +174,6 @@ export default function Reportes() {
   };
 
   return (
-    <AdminLayout>
       <div className="container mt-5">
         <h2 className="text-center mb-4 text-uppercase text-primary fw-bold">
           Reportes
@@ -427,6 +425,5 @@ export default function Reportes() {
           </div>
         </div>
       </div>
-    </AdminLayout>
   );
 }

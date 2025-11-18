@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import AdminLayout from "../../layouts/AdminLayout";
 import { FaEye, FaPlusCircle, FaEdit } from "react-icons/fa";
 
 export default function RegistroActividades() {
@@ -122,7 +121,6 @@ export default function RegistroActividades() {
   };
 
   return (
-    <AdminLayout>
       <div className="container mt-5">
         <h2 className="text-center mb-4 text-uppercase text-primary fw-bold">
           Registro de Actividades
@@ -375,6 +373,5 @@ export default function RegistroActividades() {
           </div>
         )}
       </div>
-    </AdminLayout>
   );
 }

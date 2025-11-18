@@ -6,7 +6,6 @@ import {
   FaFileInvoice,
   FaSignOutAlt,
 } from "react-icons/fa";
-import CajeroLayout from "../../layouts/CajeroLayout";
 import logo from '../../image/instituto.png'
 
 const CajeroPage = () => {
@@ -42,7 +41,6 @@ const CajeroPage = () => {
   ];
 
   return (
-    <CajeroLayout>
       <div className="container py-4">
         <div className="text-center mb-5">
           {/* Imagen hero */}
@@ -86,7 +84,6 @@ const CajeroPage = () => {
           }
         `}</style>
       </div>
-    </CajeroLayout>
   );
 };
 

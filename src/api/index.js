@@ -1,5 +1,5 @@
 export async function getEstadoCuenta(token) {
-  const res = await fetch('http://localhost:8000/api/estado-cuenta/', {
+  const res = await fetch('http://localhost:8000/estado-cuenta/?id_alumno=1', {
     headers: {
       Authorization: `Bearer ${token}`
     }

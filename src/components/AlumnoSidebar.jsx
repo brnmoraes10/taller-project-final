@@ -11,19 +11,27 @@ export default function AlumnoSidebar() {
       <h4 className="mb-4">Instituto del Milagro</h4>
       <ul className="nav nav-pills flex-column mb-auto">
         <li className="nav-item">
-          <Link to="/estado-cuenta" className={`nav-link text-white ${isActive('/estado-cuenta')}`}>
-            Estado de Cuenta
+          <Link to="/alumno" className={`nav-link text-white ${isActive('/alumno')}`}>
+            Inicio
           </Link>
         </li>
         <li className="nav-item">
-          <Link to="/subir-comprobante" className={`nav-link text-white ${isActive('/subir-comprobante')}`}>
-            Subir Comprobante
-          </Link>
-        </li>
-        <li className="nav-item">
-          <Link to="/historial-pagos" className={`nav-link text-white ${isActive('/historial-pagos')}`}>
-            Historial de Pagos
-          </Link>
+        <Link to="/alumno/estado-cuenta" className={`nav-link text-white ${isActive('/alumno/estado-cuenta')}`}>
+          Estado de Cuenta
+        </Link>
+
+        <Link to="/alumno/subir-comprobante" className={`nav-link text-white ${isActive('/alumno/subir-comprobante')}`}>
+          Subir Comprobante
+        </Link>
+
+        <Link to="/alumno/historial-pagos" className={`nav-link text-white ${isActive('/alumno/historial-pagos')}`}>
+          Historial de Pagos
+        </Link>
+
+        <Link to="/" className="nav-link text-white">
+          Salir
+        </Link>
+
         </li>
       </ul>
     </div>

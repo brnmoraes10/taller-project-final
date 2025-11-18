@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/api/estado-cuenta/'; // tu endpoint Django
+const API_URL = 'http://localhost:8000/estado-cuenta/?id_alumno=1'; // tu endpoint Django
 
 export async function getPagos() {
   const token = localStorage.getItem('access_token');

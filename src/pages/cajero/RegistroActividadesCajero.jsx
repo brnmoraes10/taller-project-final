@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import CajeroLayout from "../../layouts/CajeroLayout";
 import { FaEye, FaPlusCircle, FaEdit } from "react-icons/fa";
 import Hero from "../../components/Hero";
 import logo from '../../image/instituto.png'
@@ -124,7 +123,6 @@ export default function RegistroActividades() {
   };
 
   return (
-    <CajeroLayout>
       <div className="container mt-4">
         <Hero
             image={logo}
@@ -380,6 +378,5 @@ export default function RegistroActividades() {
           </div>
         )}
       </div>
-    </CajeroLayout>
   );
 }

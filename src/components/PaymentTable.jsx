@@ -13,12 +13,11 @@ export default function PaymentTable() {
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
 
-  // Obtener pagos del backend
   useEffect(() => {
     const fetchPagos = async () => {
       try {
         const token = localStorage.getItem('access_token');
-        const res = await axios.get('http://localhost:8000/api/pagos/', {
+        const res = await axios.get('http://localhost:8000/pagos/?id_alumno=1', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPagos(res.data);
@@ -28,11 +27,18 @@ export default function PaymentTable() {
         setLoading(false);
       }
     };
-
     fetchPagos();
   }, []);
 
-  const cuotasFiltradas = pagos.filter((c) => {
+  // Adaptar campos
+  const cuotasFiltradas = pagos.map((c, index) => ({
+    nro: index + 1,
+    periodo: c.descripcion || "Sin descripción",
+    importe: Number(c.monto || 0),
+    vencimiento: c.fecha,
+    estado: c.aprobado ? "Pagado" : "Pendiente",
+    ...c
+  })).filter((c) => {
     if (filtroEstado !== 'Todos' && c.estado !== filtroEstado) return false;
     if (filtroPeriodo !== 'Todos' && c.periodo !== filtroPeriodo) return false;
     if (fechaDesde && new Date(c.vencimiento) < new Date(fechaDesde)) return false;
@@ -43,7 +49,7 @@ export default function PaymentTable() {
   if (loading) return <p>Cargando pagos...</p>;
   if (error) return <p className="text-danger">{error}</p>;
 
-  const periodosUnicos = ['Todos', ...new Set(pagos.map(p => p.periodo))];
+  const periodosUnicos = ['Todos', ...new Set(pagos.map(p => p.descripcion))];
 
   return (
     <div>
@@ -58,7 +64,6 @@ export default function PaymentTable() {
           >
             <option value="Todos">Todos</option>
             <option value="Pendiente">Pendiente</option>
-            <option value="Vencida">Vencida</option>
             <option value="Pagado">Pagado</option>
           </select>
         </div>
@@ -114,15 +119,13 @@ export default function PaymentTable() {
             cuotasFiltradas.map((c) => (
               <tr key={c.id}>
                 <td>{c.nro}</td>
-                <td>{c.periodo}</td>
-                <td>${c.importe.toLocaleString()}</td>
+                <td>{c.fecha}</td>
+                <td>${c.importe.toLocaleString("es-ES")}</td>
                 <td>{c.vencimiento}</td>
                 <td>
                   <span
                     className={`badge ${
-                      c.estado === 'Vencida'
-                        ? 'bg-danger'
-                        : c.estado === 'Pendiente'
+                      c.estado === 'Pendiente'
                         ? 'bg-warning text-dark'
                         : 'bg-success'
                     }`}
@@ -131,7 +134,7 @@ export default function PaymentTable() {
                   </span>
                 </td>
                 <td>
-                  {(c.estado === 'Pendiente' || c.estado === 'Vencida') ? (
+                  {!c.aprobado ? (
                     <button
                       className="btn btn-sm btn-primary"
                       onClick={() => navigate('/subir-comprobante')}

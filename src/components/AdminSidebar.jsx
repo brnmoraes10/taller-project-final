@@ -23,6 +23,11 @@ export default function AdminSidebar() {
       <h4 className="mb-4">Panel Administrativo</h4>
       <ul className="nav nav-pills flex-column mb-auto">
         <li className="nav-item">
+          <Link to="/admin" className={`nav-link text-white ${isActive('/admin')}`}>
+            Inicio
+          </Link>
+        </li>
+        <li className="nav-item">
           <Link to="/admin/revisar-comprobantes" className={`nav-link text-white ${isActive('/admin/revisar-comprobantes')}`}>
             Revisar Comprobantes
           </Link>

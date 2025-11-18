@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import AdminLayout from "../../layouts/AdminLayout";
 import { FaEye, FaPlusCircle, FaCreditCard, FaBan, FaEdit } from "react-icons/fa";
 
 const alumnosDummy = [
@@ -291,7 +290,6 @@ export default function RegistroPagos() {
   const usuarios = [...new Set(pagos.map((p) => p.usuario))];
 
   return (
-    <AdminLayout>
       <div className="container mt-5">
         <h2 className="text-center mb-4 text-uppercase text-primary fw-bold">
           Registro de Pagos
@@ -725,6 +723,5 @@ export default function RegistroPagos() {
           </div>
         )}
       </div>
-    </AdminLayout>
   );
 }

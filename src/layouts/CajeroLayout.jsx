@@ -1,18 +1,22 @@
-import React from "react";
-import CajeroSidebar from "../components/CajeroSidebar";
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+import CajeroSidebar from '../components/CajeroSidebar';
 
-const CajeroLayout = ({ children }) => {
+export default function CajeroLayout() {
   return (
-    <div className="flex">
-      {/* Sidebar */}
+    <div className="d-flex">
       <CajeroSidebar />
 
-      {/* Contenido */}
-      <main className="flex-1 p-6 bg-gray-100 min-h-screen">
-        {children}
-      </main>
+      <div
+        className="flex-grow-1 p-4 bg-light"
+        style={{
+          minHeight: "100vh",
+          marginLeft: "250px",   // ✔ igual que el sidebar
+          width: "calc(100% - 250px)", // ✔ elimina el espacio muerto
+        }}
+      >
+        <Outlet />
+      </div>
     </div>
   );
-};
-
-export default CajeroLayout;
+}

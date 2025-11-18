@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import AlumnoLayout from '../../layouts/AlumnoLayout';
 import jsPDF from 'jspdf';
 
 export default function HistorialPagos() {
@@ -102,7 +101,6 @@ export default function HistorialPagos() {
   };
 
   return (
-    <AlumnoLayout>
       <div className="container mt-5">
         <h2 className="text-center mb-4">Historial de Pagos</h2>
 
@@ -220,6 +218,5 @@ export default function HistorialPagos() {
         </button>
 
       </div>
-    </AlumnoLayout>
   );
 }

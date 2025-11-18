@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import AdminLayout from "../../layouts/AdminLayout";
 
 // Íconos administrativos
 import { FaEdit, FaTrash, FaSave, FaTimes } from "react-icons/fa";
@@ -159,7 +158,6 @@ export default function CrudGenerico() {
   };
 
   return (
-    <AdminLayout>
       <div className="container mt-4">
         <h2 className="text-center mb-4 text-uppercase fw-bold text-primary">
           Gestión de Comprobantes
@@ -407,6 +405,5 @@ export default function CrudGenerico() {
           </table>
         </div>
       </div>
-    </AdminLayout>
   );
 }

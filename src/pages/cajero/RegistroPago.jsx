@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import AdminLayout from "../../layouts/CajeroLayout";
 import { FaEye, FaPlusCircle, FaCreditCard, FaBan, FaEdit } from "react-icons/fa";
-import CajeroLayout from "../../layouts/CajeroLayout";
 import Hero from "../../components/Hero";
 import logo from '../../image/instituto.png'
 
@@ -294,7 +292,6 @@ export default function RegistroPagos() {
   const usuarios = [...new Set(pagos.map((p) => p.usuario))];
 
   return (
-    <CajeroLayout>
       <div className="container mt-4">
             <Hero
               image={logo}
@@ -731,6 +728,5 @@ export default function RegistroPagos() {
           </div>
         )}
       </div>
-    </CajeroLayout>
   );
 }

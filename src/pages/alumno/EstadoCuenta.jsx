@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PaymentSummary from '../../components/PaymentSummary';
 import PaymentTable from '../../components/PaymentTable';
-import AlumnoLayout from '../../layouts/AlumnoLayout';
 import axios from 'axios';
 
 export default function EstadoCuenta() {
@@ -13,7 +12,7 @@ export default function EstadoCuenta() {
     const fetchPagos = async () => {
       try {
         const token = localStorage.getItem('access_token');
-        const res = await axios.get('http://localhost:8000/pagos/', {
+        const res = await axios.get('http://localhost:8000/estado-cuenta/?id_alumno=1', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPagos(res.data);
@@ -32,7 +31,6 @@ export default function EstadoCuenta() {
   const latePayments = pagos.filter(p => p.estado === 'Vencida').length;
 
   return (
-    <AlumnoLayout>
       <div className="container mt-4">
         <h2 className="text-center mb-4 text-danger">Estado de Cuenta del Alumno</h2>
 
@@ -53,6 +51,5 @@ export default function EstadoCuenta() {
           </>
         )}
       </div>
-    </AlumnoLayout>
   );
 }

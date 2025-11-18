@@ -1,28 +1,40 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { login, getCurrentUser } from '../../api/auth';
 
 export default function Login() {
   const [usuario, setUsuario] = useState('');
   const [contrasena, setContrasena] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Simulación simple de login y rol
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
-    // Aquí podrías validar contra un backend o un mock
-    if (usuario === 'alumno' && contrasena === '1234') {
-      navigate('/estado-cuenta');
-    } else if (usuario === 'admin' && contrasena === '1234') {
-      navigate('/admin/revisar-comprobantes');
-    } else {
-      alert('Usuario o contraseña incorrectos');
+    try {
+      // Hacemos login y obtenemos tokens
+      const data = await login(usuario, contrasena);
+      localStorage.setItem('access_token', data.access);
+      localStorage.setItem('refresh_token', data.refresh);
+
+      // Obtenemos información del usuario desde Django
+      const user = await getCurrentUser(data.access);
+
+      // Redirigimos según el rol
+      if (user.rol === 'alumno') navigate('/estado-cuenta');
+      else if (user.rol === 'admin') navigate('/admin/revisar-comprobantes');
+      else if (user.rol === 'cajero') navigate('/cajero');
+      else navigate('/'); // fallback
+    } catch (err) {
+      setError(err.message);
     }
   };
 
   return (
     <div className="container mt-5" style={{ maxWidth: '400px' }}>
       <h2 className="text-center">Iniciar Sesión</h2>
+      {error && <div className="alert alert-danger">{error}</div>}
       <form className="mt-4" onSubmit={handleSubmit}>
         <div className="mb-3">
           <label className="form-label">Usuario</label>
@@ -44,7 +56,9 @@ export default function Login() {
             onChange={(e) => setContrasena(e.target.value)}
           />
         </div>
-        <button className="btn btn-primary w-100" type="submit">Ingresar</button>
+        <button className="btn btn-primary w-100" type="submit">
+          Ingresar
+        </button>
       </form>
     </div>
   );

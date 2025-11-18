@@ -1,45 +1,49 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';  // Importar useNavigate
-
-const cuotas = [
-  { nro: 3, periodo: 'Mayo 2025', importe: 100000, vencimiento: '2025-05-10', estado: 'Vencida' },
-  { nro: 4, periodo: 'Junio 2025', importe: 100000, vencimiento: '2025-06-10', estado: 'Vencida' },
-  { nro: 5, periodo: 'Julio 2025', importe: 100000, vencimiento: '2025-07-10', estado: 'Vencida' },
-  { nro: 6, periodo: 'Agosto 2025', importe: 100000, vencimiento: '2025-08-10', estado: 'Vencida' },
-  { nro: 7, periodo: 'Septiembre 2025', importe: 100000, vencimiento: '2025-09-10', estado: 'Pendiente' },
-  { nro: 8, periodo: 'Octubre 2025', importe: 100000, vencimiento: '2025-10-10', estado: 'Pagado' },
-];
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function PaymentTable() {
-  const navigate = useNavigate();  // Instanciar navigate
+  const navigate = useNavigate();
+  const [pagos, setPagos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const [filtroEstado, setFiltroEstado] = useState('Todos');
   const [filtroPeriodo, setFiltroPeriodo] = useState('Todos');
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
 
-  const meses = [
-    'Todos',
-    'Enero 2025', 'Febrero 2025', 'Marzo 2025', 'Abril 2025', 'Mayo 2025',
-    'Junio 2025', 'Julio 2025', 'Agosto 2025', 'Septiembre 2025', 'Octubre 2025',
-    'Noviembre 2025', 'Diciembre 2025',
-  ];
+  // Obtener pagos del backend
+  useEffect(() => {
+    const fetchPagos = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const res = await axios.get('http://localhost:8000/api/pagos/', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setPagos(res.data);
+      } catch (err) {
+        setError('Error al cargar los pagos');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const cuotasFiltradas = cuotas.filter((c) => {
-    if (filtroEstado !== 'Todos' && c.estado !== filtroEstado) {
-      return false;
-    }
-    if (filtroPeriodo !== 'Todos' && c.periodo !== filtroPeriodo) {
-      return false;
-    }
-    if (fechaDesde && new Date(c.vencimiento) < new Date(fechaDesde)) {
-      return false;
-    }
-    if (fechaHasta && new Date(c.vencimiento) > new Date(fechaHasta)) {
-      return false;
-    }
+    fetchPagos();
+  }, []);
+
+  const cuotasFiltradas = pagos.filter((c) => {
+    if (filtroEstado !== 'Todos' && c.estado !== filtroEstado) return false;
+    if (filtroPeriodo !== 'Todos' && c.periodo !== filtroPeriodo) return false;
+    if (fechaDesde && new Date(c.vencimiento) < new Date(fechaDesde)) return false;
+    if (fechaHasta && new Date(c.vencimiento) > new Date(fechaHasta)) return false;
     return true;
   });
+
+  if (loading) return <p>Cargando pagos...</p>;
+  if (error) return <p className="text-danger">{error}</p>;
+
+  const periodosUnicos = ['Todos', ...new Set(pagos.map(p => p.periodo))];
 
   return (
     <div>
@@ -66,8 +70,8 @@ export default function PaymentTable() {
             value={filtroPeriodo}
             onChange={(e) => setFiltroPeriodo(e.target.value)}
           >
-            {meses.map((mes) => (
-              <option key={mes} value={mes}>{mes}</option>
+            {periodosUnicos.map((p) => (
+              <option key={p} value={p}>{p}</option>
             ))}
           </select>
         </div>
@@ -107,27 +111,27 @@ export default function PaymentTable() {
         </thead>
         <tbody>
           {cuotasFiltradas.length > 0 ? (
-            cuotasFiltradas.map((cuota) => (
-              <tr key={cuota.nro}>
-                <td>{cuota.nro}</td>
-                <td>{cuota.periodo}</td>
-                <td>${cuota.importe.toLocaleString()}</td>
-                <td>{cuota.vencimiento}</td>
+            cuotasFiltradas.map((c) => (
+              <tr key={c.id}>
+                <td>{c.nro}</td>
+                <td>{c.periodo}</td>
+                <td>${c.importe.toLocaleString()}</td>
+                <td>{c.vencimiento}</td>
                 <td>
                   <span
                     className={`badge ${
-                      cuota.estado === 'Vencida'
+                      c.estado === 'Vencida'
                         ? 'bg-danger'
-                        : cuota.estado === 'Pendiente'
+                        : c.estado === 'Pendiente'
                         ? 'bg-warning text-dark'
                         : 'bg-success'
                     }`}
                   >
-                    {cuota.estado}
+                    {c.estado}
                   </span>
                 </td>
                 <td>
-                  {cuota.estado === 'Pendiente' || cuota.estado === 'Vencida' ? (
+                  {(c.estado === 'Pendiente' || c.estado === 'Vencida') ? (
                     <button
                       className="btn btn-sm btn-primary"
                       onClick={() => navigate('/subir-comprobante')}

@@ -1,0 +1,7 @@
+<h1>Home (protegido)</h1>
+<p>Hola, {{ request.user.username}}</p>
+
+<form method="post" action="{% url 'logout' %}" style="display:inline">
+    {% csrf_token %}
+    <button type="submit">Salir</button> 
+</form>

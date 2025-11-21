@@ -8,8 +8,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from .forms import RegistroForm
-from .serializers import MyTokenObtainPairSerializer, PagoSerializer
-from .models import Pago, User
+from .serializers import MyTokenObtainPairSerializer, PagoSerializer, ComprobanteSerializer, TipoPagoSerializer
+from .models import Pago, TipoPago
+from rest_framework import status
 
 # ==========================
 # Django Views (HTML pages)
@@ -66,7 +67,11 @@ class EstadoCuentaView(APIView):
         if alumno is None:
             return Response({"error": "No se encontró información del alumno"}, status=404)
 
-        pagos = Pago.objects.filter(alumno=alumno)
+        pagos = Pago.objects.filter(alumno=alumno).select_related(
+        'estado_pago',
+        'tipos_pago'
+        )
+
         serializer = PagoSerializer(pagos, many=True)
         return Response(serializer.data)
 
@@ -101,3 +106,31 @@ class MeView(APIView):
             "username": user.username,
             "rol": user.role
         })
+    
+class ComprobanteCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ComprobanteSerializer(data=request.data)
+
+        if serializer.is_valid():
+            comprobante = serializer.save()   # ← ya tienes el comprobante creado
+
+            # ---- ACTUALIZAR ESTADO DEL PAGO ----
+            pago = comprobante.pago           # ← obtienes el pago relacionado
+            pago.estado_pago_id = 4           # ← el valor que necesites
+            pago.save()                       # ← guardas
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        print("ERRORS =>", serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class TipoPagoListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        tipos_pagos = TipoPago.objects.all()
+        serializer = TipoPagoSerializer(tipos_pagos, many=True)
+        return Response(serializer.data)
+

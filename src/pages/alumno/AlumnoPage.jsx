@@ -28,7 +28,7 @@ const AlumnoPage = () => {
       icon: <FaHistory className="text-warning" style={{ fontSize: '2.5rem' }} />,
       title: "Historial de Pago",
       description: "Revisa todos tus pagos realizados previamente.",
-      to: "/alumno/historial-pago",
+      to: "/alumno/historial-pagos",
       borderClass: "border-warning",
     },
     {

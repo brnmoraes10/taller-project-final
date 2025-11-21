@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaCcPaypal, FaStripe } from 'react-icons/fa';
 import { SiMercadopago } from 'react-icons/si';
+import axios from 'axios';
 
 export default function SubirComprobante() {
-  const [periodo, setPeriodo] = useState('');
+  const [pago, setPago] = useState('');
   const [archivo, setArchivo] = useState(null);
   const [observacion, setObservacion] = useState('');
   const [tipoPago, setTipoPago] = useState('');
   const [pasarela, setPasarela] = useState(''); // Nueva opción para pasarela
   const [cupon, setCupon] = useState(''); // Nº de cupón generado
+  const [pagos, setPagos] = useState([]);
+  const [error, setError] = useState('');
+  const [tiposPagos, setTiposPagos] = useState([]);
 
   const generarCupon = () => {
     // Ejemplo: CUP-20251003-1234
@@ -16,35 +20,111 @@ export default function SubirComprobante() {
     return `CUP-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${random}`;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const formatearPeriodo = (fechaString) => {
+  const fecha = new Date(`${fechaString}T00:00:00`);
 
-    if (!periodo || !archivo || !tipoPago) {
-      alert('Completa todos los campos obligatorios.');
+  return fecha.toLocaleDateString("es-ES", {
+    month: "long",
+    year: "numeric"
+  });
+  };
+ 
+  useEffect(() => {
+      const fetchPagos = async () => {
+        try {
+          const token = localStorage.getItem('access_token');
+          const res = await axios.get('http://localhost:8000/estado-cuenta/?id_alumno=1', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setPagos(res.data);
+          console.log(res.data);
+        }
+        catch (err) {
+          setError('Error al cargar los pagos');
+        }
+      };
+  
+      fetchPagos();
+
+      const fetchTipoPagos = async () => {
+        try {
+          const token = localStorage.getItem('access_token');
+          const res = await axios.get('http://localhost:8000/tipos-pagos/', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setTiposPagos(res.data);
+          console.log(res.data);
+        }
+        catch (err) {
+          setError('Error al cargar los tipos de pago');
+        }
+      };
+  
+      fetchTipoPagos();
+    }, []);
+
+    useEffect(() => {
+    const token = localStorage.getItem('access_token');
+  }, []);
+  
+  const pagosFiltrados = pagos
+    
+    .map(p => ({
+      ...p,
+      periodo: formatearPeriodo(p.fecha),
+    }))
+    .filter(p => !p.aprobado)
+    .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+  console.log(pagosFiltrados);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("access_token");
+
+    if (!pago || !archivo || !tipoPago) {
+      alert("Completa todos los campos obligatorios.");
       return;
     }
 
     const numeroCupon = generarCupon();
     setCupon(numeroCupon);
 
-    // Aquí podrías enviar los datos a una API
-    console.log('Periodo:', periodo);
-    console.log('Archivo:', archivo);
-    console.log('Observación:', observacion);
-    console.log('Tipo de pago:', tipoPago);
-    console.log('Pasarela:', pasarela);
-    console.log('Cupón generado:', numeroCupon);
+    const formData = new FormData();
+    formData.append("observacion", observacion);
+    formData.append("estado", "Pendiente");
+    formData.append("cupon", numeroCupon);
+    formData.append("pago", pago.id); 
+    formData.append("importe", pago.monto);
+    formData.append("id_tipo_pago", tipoPago);
+    formData.append("pasarela", pasarela);
+    formData.append("urlarchivo", archivo);
+    formData.append("fecha_emision", new Date().toISOString().split('T')[0]);
 
-    alert(`Comprobante enviado con éxito\nNúmero de cupón: ${numeroCupon}`);
+
+    try {
+      await axios.post("http://localhost:8000/comprobantes-create/", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      alert("Comprobante enviado con éxito");
+    } catch (err) {
+      console.error(err);
+      alert("Error enviando comprobante");
+    }
 
     // Reset del formulario
-    setPeriodo('');
+    setPago('');
     setArchivo(null);
     setObservacion('');
     setTipoPago('');
     setPasarela('');
     document.getElementById('archivo-input').value = null;
   };
+
+  if (error) return <p className="text-danger">{error}</p>;
 
   return (
       <div className="container mt-5">
@@ -56,22 +136,17 @@ export default function SubirComprobante() {
             <label className="form-label">Período/Cuota *</label>
             <select
               className="form-select"
-              value={periodo}
-              onChange={(e) => setPeriodo(e.target.value)}
+              value={pago.id}
+              onChange={(e) => setPago(pagosFiltrados.find(p => p.id == e.target.value))}
             >
-              <option value="">-- Selecciona un período --</option>
-                      <option value="Enero 2025">Enero 2025</option>
-                      <option value="Febrero 2025">Febrero 2025</option>
-                      <option value="Marzo 2025">Marzo 2025</option>
-                      <option value="Abril 2025">Abril 2025</option>
-                      <option value="Mayo 2025">Mayo 2025</option>
-                      <option value="Junio 2025">Junio 2025</option>
-                      <option value="Julio 2025">Julio 2025</option>
-                      <option value="Agosto 2025">Agosto 2025</option>
-                      <option value="Septiembre 2025">Septiembre 2025</option>
-                      <option value="Octubre 2025">Octubre 2025</option>
-                      <option value="Noviembre 2025">Noviembre 2025</option>
-                      <option value="Diciembre 2025">Diciembre 2025</option>
+              <option value="">-- Selecciona una Cuota --</option>
+
+              {pagosFiltrados.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.periodo}
+                </option>
+              ))}
+
             </select>
           </div>
 
@@ -84,15 +159,16 @@ export default function SubirComprobante() {
               onChange={(e) => setTipoPago(e.target.value)}
             >
               <option value="">-- Selecciona un tipo de pago --</option>
-              <option value="transferencia">Transferencia bancaria</option>
-              <option value="tarjeta">Tarjeta de crédito/débito</option>
-              <option value="efectivo">Pago en efectivo</option>
-              <option value="paypal">PayPal</option>
+              {tiposPagos.map((tp) => (
+                <option key={tp.id} value={tp.id}>
+                  {tp.tipopago}
+                </option>
+              ))}
             </select>
           </div>
 
           {/* PASARELA DE PAGO */}
-          {tipoPago === 'tarjeta' || tipoPago === 'paypal' ? (
+          {tipoPago === '3' || tipoPago === 'paypal' ? (
             <div className="mb-3">
               <label className="form-label">Pasarela de Pago *</label>
               <div className="input-group">

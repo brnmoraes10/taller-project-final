@@ -56,6 +56,13 @@ class EstadoPago(models.Model):
     # Debe ser nullable
     id_estado = models.IntegerField(null=True, blank=True, db_column='id_estado')
 
+    color = models.CharField(    
+        max_length=20,           
+        null=True,
+        blank=True,
+        db_column='color'
+    )
+
     def __str__(self):
         return self.nombre_estado
 
@@ -85,6 +92,7 @@ class Pago(models.Model):
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE)
 
     fecha = models.DateField()
+    fecha_ven = models.DateField(null=True)
     monto = models.DecimalField(max_digits=10, decimal_places=2)
     descripcion = models.CharField(max_length=255)
     aprobado = models.BooleanField(default=False)
@@ -141,11 +149,11 @@ class Pago(models.Model):
 #   COMPROBANTE  → tabla: app_comprobante
 # ======================================
 class Comprobante(models.Model):
-    archivo = models.CharField(max_length=100)
+    id_comprobante = models.AutoField(primary_key=True)
+    id_tipo_pago = models.IntegerField(null=True, blank=True)
+    archivo = models.CharField(max_length=100, null=True, blank=True)
     aprobado = models.BooleanField(default=False)
-
-    id_pago = models.BigIntegerField(null=True, blank=True, db_column='id_pago')
-
+    cupon = models.CharField(max_length=100, null=True, blank=True)
     nro_comprobante = models.IntegerField(null=True, blank=True)
     fecha_emision = models.DateField(null=True, blank=True)
     estado = models.CharField(max_length=100, null=True, blank=True)
@@ -155,10 +163,10 @@ class Comprobante(models.Model):
     fecha_validado = models.DateField(null=True, blank=True)
     observacion = models.CharField(max_length=200, null=True, blank=True)
     id_estado = models.IntegerField(null=True, blank=True, db_column='id_estado')
-    urlarchivo = models.CharField(max_length=255, null=True, blank=True)
+    urlarchivo = models.FileField(upload_to='comprobantes/', null=True, blank=True)
 
     # FK REAL (columna: pago_id)
-    pago = models.ForeignKey(Pago, on_delete=models.CASCADE, db_column='pago_id')
+    pago = models.ForeignKey(Pago, on_delete=models.CASCADE, db_column='id_pago')
 
     def __str__(self):
         return f"Comprobante {self.id}"

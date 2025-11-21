@@ -27,8 +27,9 @@ export default function EstadoCuenta() {
   }, []);
 
   // Resumen dinámico
-  const totalDebt = pagos.reduce((sum, p) => sum + p.importe, 0);
-  const latePayments = pagos.filter(p => p.estado === 'Vencida').length;
+  const totalDebt = pagos.filter(p => !p.aprobado).reduce((sum, p) => sum + parseFloat(p.monto), 0);
+  console.log(totalDebt);
+  const latePayments = pagos.filter(p => !p.aprobado & new Date(p.fecha_ven) < new Date()).length;
 
   return (
       <div className="container mt-4">

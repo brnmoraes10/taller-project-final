@@ -56,6 +56,13 @@ class EstadoPago(models.Model):
     # Debe ser nullable
     id_estado = models.IntegerField(null=True, blank=True, db_column='id_estado')
 
+    color = models.CharField(    
+        max_length=20,           
+        null=True,
+        blank=True,
+        db_column='color'
+    )
+
     def __str__(self):
         return self.nombre_estado
 
@@ -85,6 +92,7 @@ class Pago(models.Model):
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE)
 
     fecha = models.DateField()
+    fecha_ven = models.DateField(null=True)
     monto = models.DecimalField(max_digits=10, decimal_places=2)
     descripcion = models.CharField(max_length=255)
     aprobado = models.BooleanField(default=False)

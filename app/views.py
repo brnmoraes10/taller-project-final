@@ -66,7 +66,11 @@ class EstadoCuentaView(APIView):
         if alumno is None:
             return Response({"error": "No se encontró información del alumno"}, status=404)
 
-        pagos = Pago.objects.filter(alumno=alumno)
+        pagos = Pago.objects.filter(alumno=alumno).select_related(
+        'estado_pago',
+        'tipos_pago'
+        )
+        
         serializer = PagoSerializer(pagos, many=True)
         return Response(serializer.data)
 

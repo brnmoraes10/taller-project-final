@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Pago
+from .models import Pago, EstadoPago, TipoPago
 
 User = get_user_model()
 
@@ -17,7 +17,21 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
 # Serializer para tus pagos (EstadoCuenta)
+
+class EstadoPagoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EstadoPago
+        fields = '__all__'
+
+class TipoPagoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TipoPago
+        fields = '__all__'
+
 class PagoSerializer(serializers.ModelSerializer):
+    estado_pago = EstadoPagoSerializer(read_only=True)
+    tipos_pago = TipoPagoSerializer(read_only=True)
+
     class Meta:
         model = Pago
         fields = '__all__'

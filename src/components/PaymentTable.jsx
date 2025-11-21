@@ -32,13 +32,13 @@ export default function PaymentTable() {
 
   // Adaptar campos
   const cuotasFiltradas = pagos.map((c, index) => ({
-    nro: index + 1,
-    periodo: c.descripcion || "Sin descripción",
+    periodo: c.fecha,
     importe: Number(c.monto || 0),
-    vencimiento: c.fecha,
-    estado: c.aprobado ? "Pagado" : "Pendiente",
+    vencimiento: c.fecha_ven,
+    estado: c.estado_pago.nombre_estado,
     ...c
-  })).filter((c) => {
+  })).sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
+ .filter((c) => {
     if (filtroEstado !== 'Todos' && c.estado !== filtroEstado) return false;
     if (filtroPeriodo !== 'Todos' && c.periodo !== filtroPeriodo) return false;
     if (fechaDesde && new Date(c.vencimiento) < new Date(fechaDesde)) return false;
@@ -106,7 +106,6 @@ export default function PaymentTable() {
       <table className="table table-bordered table-striped">
         <thead>
           <tr>
-            <th>Nro</th>
             <th>Periodo</th>
             <th>Importe</th>
             <th>Vencimiento</th>
@@ -118,17 +117,14 @@ export default function PaymentTable() {
           {cuotasFiltradas.length > 0 ? (
             cuotasFiltradas.map((c) => (
               <tr key={c.id}>
-                <td>{c.nro}</td>
                 <td>{c.fecha}</td>
                 <td>${c.importe.toLocaleString("es-ES")}</td>
                 <td>{c.vencimiento}</td>
                 <td>
                   <span
-                    className={`badge ${
-                      c.estado === 'Pendiente'
-                        ? 'bg-warning text-dark'
-                        : 'bg-success'
-                    }`}
+                    className={`badge bg-${c.estado_pago.color} 
+
+                    `}
                   >
                     {c.estado}
                   </span>
@@ -137,7 +133,7 @@ export default function PaymentTable() {
                   {!c.aprobado ? (
                     <button
                       className="btn btn-sm btn-primary"
-                      onClick={() => navigate('/subir-comprobante')}
+                      onClick={() => navigate('/alumno/subir-comprobante')}
                     >
                       💳 Pagar
                     </button>

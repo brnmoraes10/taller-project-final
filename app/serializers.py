@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Pago, EstadoPago, TipoPago
+from .models import Pago, EstadoPago, TipoPago, Comprobante
 
 User = get_user_model()
 
@@ -34,4 +34,9 @@ class PagoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Pago
+        fields = '__all__'
+
+class ComprobanteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comprobante
         fields = '__all__'

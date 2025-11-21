@@ -5,7 +5,9 @@ from .views import (
     EstadoCuentaView,
     CajeroView,
     AdminView,
-    MeView
+    MeView,
+    ComprobanteCreateView,
+    TipoPagoListView,
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -22,4 +24,6 @@ urlpatterns = [
     path('cajero/', CajeroView.as_view(), name='cajero_data'),
     path('admin/', AdminView.as_view(), name='admin_data'),
     path('pagos/', EstadoCuentaView.as_view(), name='pagos'),
+    path('comprobantes-create/', ComprobanteCreateView.as_view(), name='comprobante-create'),
+    path('tipos-pagos/', TipoPagoListView.as_view(), name='tipos-pagos'),
 ]

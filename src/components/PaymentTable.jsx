@@ -36,6 +36,7 @@ export default function PaymentTable() {
     importe: Number(c.monto || 0),
     vencimiento: c.fecha_ven,
     estado: c.estado_pago.nombre_estado,
+    estado_pago_id: c.estado_pago.id,
     ...c
   })).sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
  .filter((c) => {
@@ -49,7 +50,7 @@ export default function PaymentTable() {
   if (loading) return <p>Cargando pagos...</p>;
   if (error) return <p className="text-danger">{error}</p>;
 
-  const periodosUnicos = ['Todos', ...new Set(pagos.map(p => p.descripcion))];
+  const periodosUnicos = ['Todos', ...new Set(pagos.map(p => p.fecha))];
 
   return (
     <div>
@@ -65,6 +66,7 @@ export default function PaymentTable() {
             <option value="Todos">Todos</option>
             <option value="Pendiente">Pendiente</option>
             <option value="Pagado">Pagado</option>
+            <option value="Rechazado">Rechazado</option>
           </select>
         </div>
 
@@ -134,6 +136,7 @@ export default function PaymentTable() {
                     <button
                       className="btn btn-sm btn-primary"
                       onClick={() => navigate('/alumno/subir-comprobante')}
+                      disabled={c.estado_pago_id === 4}
                     >
                       💳 Pagar
                     </button>

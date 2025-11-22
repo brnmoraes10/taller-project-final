@@ -92,11 +92,11 @@ export default function SubirComprobante() {
 
     const formData = new FormData();
     formData.append("observacion", observacion);
-    formData.append("estado", "Pendiente");
+    formData.append("estadopago_id", 4);
     formData.append("cupon", numeroCupon);
-    formData.append("pago", pago.id); 
+    formData.append("pago_id", pago.id); 
     formData.append("importe", pago.monto);
-    formData.append("id_tipo_pago", tipoPago);
+    formData.append("tipopago_id", tipoPago);
     formData.append("pasarela", pasarela);
     formData.append("urlarchivo", archivo);
     formData.append("fecha_emision", new Date().toISOString().split('T')[0]);

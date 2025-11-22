@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from .forms import RegistroForm
-from .serializers import MyTokenObtainPairSerializer, PagoSerializer, ComprobanteSerializer, TipoPagoSerializer
-from .models import Pago, TipoPago
+from .serializers import MyTokenObtainPairSerializer, PagoSerializer, ComprobanteSerializer, TipoPagoSerializer, AlumnoSerializer
+from .models import Pago, TipoPago, Comprobante, Alumno
 from rest_framework import status
 
 # ==========================
@@ -112,7 +112,7 @@ class ComprobanteCreateView(APIView):
 
     def post(self, request):
         serializer = ComprobanteSerializer(data=request.data)
-
+        print("REQUEST DATA =>", request.data)
         if serializer.is_valid():
             comprobante = serializer.save()   # ← ya tienes el comprobante creado
 
@@ -132,5 +132,56 @@ class TipoPagoListView(APIView):
     def get(self, request):
         tipos_pagos = TipoPago.objects.all()
         serializer = TipoPagoSerializer(tipos_pagos, many=True)
+        return Response(serializer.data)
+    
+class ComprobantesListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        comprobantes = Comprobante.objects.select_related(
+        'pago',
+        'tipopago',
+        'estadopago'
+    
+        )
+        serializer = ComprobanteSerializer(comprobantes, many=True)
+        return Response(serializer.data)
+    
+class ComprobantesUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, pk):
+        try:
+            comprobante = Comprobante.objects.get(pk=pk)
+        except Comprobante.DoesNotExist:
+            return Response({"error": "Comprobante no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = ComprobanteSerializer(comprobante, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            comprobante_actualizado = serializer.save()
+
+            # ----- ACTUALIZAR ESTADO DEL PAGO -----
+            pago = comprobante_actualizado.pago      # obtenemos el pago relacionado
+            pago.estado_pago_id = comprobante_actualizado.estadopago_id  # estado que quieras asignar
+                                         
+
+            if comprobante_actualizado.estadopago_id == 1:
+                pago.aprobado = 1
+            else:
+                pago.aprobado = 0
+
+            pago.save()  # guardamos
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    
+class AlumnosListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        alumnos = Alumno.objects.all()
+        serializer = AlumnoSerializer(alumnos, many=True)
         return Response(serializer.data)
 

@@ -1,63 +1,45 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import jsPDF from 'jspdf';
+import axios from 'axios';
 
 export default function HistorialPagos() {
-  const pagos = [
-    {
-      id: 1,
-      fecha: '2025-09-10',
-      periodo: 'Agosto 2025',
-      monto: 100000,
-      estado: 'Aprobado',
-      tipoPago: 'Transferencia bancaria',
-      comprobante: '/comprobantes/comprobante1.pdf',
-      observacion: 'Pago recibido correctamente',
-    },
-    {
-      id: 2,
-      fecha: '2025-08-10',
-      periodo: 'Julio 2025',
-      monto: 100000,
-      estado: 'Rechazado',
-      tipoPago: 'Tarjeta de crédito',
-      comprobante: '/comprobantes/comprobante2.pdf',
-      observacion: 'Comprobante ilegible',
-    },
-    {
-      id: 3,
-      fecha: '2025-07-10',
-      periodo: 'Junio 2025',
-      monto: 100000,
-      estado: 'En revisión',
-      tipoPago: 'PayPal',
-      comprobante: '/comprobantes/comprobante3.pdf',
-      observacion: '',
-    },
-  ];
+  const [comprobantes, setComprobantes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchComprobante = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const res = await axios.get(`http://localhost:8000/comprobantes`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setComprobantes(res.data);
+        console.log(res.data);
+      } catch (err) {
+        setError('Error al cargar el comprobante');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchComprobante();
+  }, []);
 
   const [filtroPeriodo, setFiltroPeriodo] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('');
   const [filtroFecha, setFiltroFecha] = useState('');
 
   const getEstadoBadge = (estado) => {
-    switch (estado) {
-      case 'Aprobado':
-        return <span className="badge bg-success">{estado}</span>;
-      case 'Rechazado':
-        return <span className="badge bg-danger">{estado}</span>;
-      case 'En revisión':
-        return <span className="badge bg-warning text-dark">{estado}</span>;
-      default:
-        return <span className="badge bg-secondary">Desconocido</span>;
-    }
+    return <span className={`badge bg-${estado.color}`}>{estado.nombre_estado}</span>;
   };
 
   // Filtrar pagos según filtros aplicados
-  const pagosFiltrados = pagos.filter((p) => {
+  const comprobanteFiltrados = comprobantes.filter((c) => {
     return (
-      (filtroPeriodo === '' || p.periodo === filtroPeriodo) &&
-      (filtroEstado === '' || p.estado === filtroEstado) &&
-      (filtroFecha === '' || p.fecha === filtroFecha)
+      (filtroPeriodo === '' || c.periodo === filtroPeriodo) &&
+      (filtroEstado === '' || c.estado === filtroEstado) &&
+      (filtroFecha === '' || c.fecha_emision === filtroFecha)
     );
   });
 
@@ -71,13 +53,13 @@ export default function HistorialPagos() {
     doc.setTextColor(100);
 
     const columnas = ["#", "Fecha", "Período", "Monto", "Estado", "Tipo de Pago"];
-    const filas = pagosFiltrados.map(pago => [
-      pago.id.toString(),
-      pago.fecha,
-      pago.periodo,
-      `$${pago.monto.toLocaleString()}`,
-      pago.estado,
-      pago.tipoPago,
+    const filas = comprobanteFiltrados.map(c => [
+      c.id.toString(),
+      c.fecha,
+      c.periodo,
+      `$${c.monto.toLocaleString()}`,
+      c.estado,
+      c.tipoPago,
     ]);
 
     let startY = 30;
@@ -98,6 +80,17 @@ export default function HistorialPagos() {
     });
 
     doc.save('historial-pagos-filtrado.pdf');
+  };
+
+  if (error) return <p className="text-danger">{error}</p>;
+
+  const formatearPeriodo = (fechaString) => {
+  const fecha = new Date(`${fechaString}T00:00:00`);
+
+  return fecha.toLocaleDateString("es-ES", {
+    month: "long",
+    year: "numeric"
+  });
   };
 
   return (
@@ -167,21 +160,21 @@ export default function HistorialPagos() {
               </tr>
             </thead>
             <tbody>
-              {pagosFiltrados.length > 0 ? (
-                pagosFiltrados.map((pago) => (
-                  <tr key={pago.id}>
-                    <td>{pago.id}</td>
-                    <td>{pago.fecha}</td>
-                    <td>{pago.periodo}</td>
-                    <td>${pago.monto.toLocaleString()}</td>
-                    <td>{getEstadoBadge(pago.estado)}</td>
-                    <td>{pago.tipoPago}</td>
-                    <td>{pago.observacion || '—'}</td>
+              {comprobantes.length > 0 ? (
+                comprobantes.map((c) => (
+                  <tr key={c.id_comprobante}>
+                    <td>{c.id_comprobante}</td>
+                    <td>{c.fecha_emision}</td>
+                    <td>{formatearPeriodo(c.pago.fecha)}</td>
+                    <td>${c.importe.toLocaleString()}</td>
+                    <td>{getEstadoBadge(c.estadopago)}</td>
+                    <td>{c.tipopago.tipopago}</td>
+                    <td>{c.observacion || '—'}</td>
                     <td>
-                      {pago.comprobante ? (
+                      {c.urlarchivo ? (
                         <div className="d-flex gap-2">
                           <a
-                            href={pago.comprobante}
+                            href={c.urlarchivo}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn btn-sm btn-info"
@@ -189,7 +182,7 @@ export default function HistorialPagos() {
                             Ver
                           </a>
                           <a
-                            href={pago.comprobante}
+                            href={c.urlarchivo}
                             download
                             className="btn btn-sm btn-secondary"
                           >

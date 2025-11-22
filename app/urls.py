@@ -8,6 +8,9 @@ from .views import (
     MeView,
     ComprobanteCreateView,
     TipoPagoListView,
+    ComprobantesListView,
+    ComprobantesUpdateView,
+    AlumnosListView,
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -26,4 +29,7 @@ urlpatterns = [
     path('pagos/', EstadoCuentaView.as_view(), name='pagos'),
     path('comprobantes-create/', ComprobanteCreateView.as_view(), name='comprobante-create'),
     path('tipos-pagos/', TipoPagoListView.as_view(), name='tipos-pagos'),
+    path('comprobantes/', ComprobantesListView.as_view(), name='comprobantes-list'),
+    path('comprobantes-update/<int:pk>/', ComprobantesUpdateView.as_view(), name='comprobantes-update'),
+    path('alumnos/', AlumnosListView.as_view(), name='alumnos-list'),
 ]

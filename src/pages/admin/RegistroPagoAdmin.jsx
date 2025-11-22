@@ -1,13 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaEye, FaPlusCircle, FaCreditCard, FaBan, FaEdit } from "react-icons/fa";
+import axios from "axios";
 
-const alumnosDummy = [
-  { id: 1, nombre: "Juan Pérez", dni: "12345678" },
-  { id: 2, nombre: "María Gómez", dni: "87654321" },
-  { id: 3, nombre: "Luis Fernández", dni: "23456789" },
-];
 
-const periodosDummy = ["2025-1", "2025-2", "2026-1"];
+const periodosDummy = ["2025-10-01", "2025-11-01","2025-12-01",];
 const cuotasDummy = [
   { id: 1, descripcion: "Cuota 1", importe: 1000 },
   { id: 2, descripcion: "Cuota 2", importe: 1200 },
@@ -58,6 +54,71 @@ export default function RegistroPagos() {
       notaCredito: null,
     },
   ]);
+
+  const [comprobantes, setComprobantes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [tiposPagos, setTiposPagos] = useState([]); 
+  const [alumnos, setAlumnos] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [observacion, setObservacion] = useState("");
+  const [comprobanteSeleccionado, setComprobanteSeleccionado] = useState(null);
+
+
+  const fetchComprobante = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const res = await axios.get(`http://localhost:8000/comprobantes`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setComprobantes(res.data);
+        console.log(res.data);
+      } catch (err) {
+        setError('Error al cargar el comprobante');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+      const fetchAlumnos = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const res = await axios.get(`http://localhost:8000/alumnos`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setAlumnos(res.data);
+        console.log(res.data);
+      } catch (err) {
+        setError('Error al cargar alumnos');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+
+
+    const fetchTipoPagos = async () => {
+      try {
+        const token = localStorage.getItem('access_token');
+        const res = await axios.get('http://localhost:8000/tipos-pagos/', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setTiposPagos(res.data);
+        console.log(res.data);
+      }
+      catch (err) {
+        setError('Error al cargar los tipos de pago');
+      }
+    };
+
+    useEffect(() => {
+    fetchComprobante();
+    fetchTipoPagos();
+    fetchAlumnos();
+    }, []);
+
+ 
+
 
   const [filtroDni, setFiltroDni] = useState("");
   const [filtroEstado, setFiltroEstado] = useState("");
@@ -111,24 +172,24 @@ export default function RegistroPagos() {
     }
   };
 
-  const abrirEdicion = (pago) => {
+  const abrirEdicion = (c) => {
     // Poner el pago en modo edición
-    setEditandoPago(pago.id);
+    setEditandoPago(c.id_comprobante);
     setNuevoPago({
       alumnoId: "", // no necesitamos id si editamos
-      dni: pago.dni,
-      alumnoNombre: pago.alumno,
-      usuario: pago.usuario,
-      monto: pago.monto,
-      estado: pago.estado,
-      metodoPago: pago.metodoPago,
-      periodo: pago.periodo,
+      dni: c.pago.alumno.DNI,
+      alumnoNombre: c.pago.alumno.nombre_alumno + " " + c.pago.alumno.apellido_alumno,
+      usuario: c.usuario,
+      monto: c.importe,
+      estado: c.estado,
+      metodoPago: c.tipopago.id,
+      periodo: c.pago.fecha,
       cuotaId: "", // no lo usamos directamente
-      cuotaDesc: pago.cuota,
-      carrera: pago.carrera,
-      pasarelaSeleccionada: pago.pasarela || "",
+      cuotaDesc: c.cuota,
+      carrera: c.pago.alumno.carrera,
+      pasarelaSeleccionada: c.pasarela || "",
       comprobanteFile: null,
-      observacion: pago.observacion,
+      observacion: c.observacion,
     });
   };
 
@@ -260,34 +321,126 @@ export default function RegistroPagos() {
     alert("Pago anulado y nota de crédito generada ✅");
   };
 
-  const getEstadoBadge = (estado, anulado) => {
-    if (anulado)
-      return (
-        <span className="badge bg-danger px-3 py-2" title="Pago anulado con nota de crédito">
-          Anulado
-        </span>
-      );
-    switch (estado) {
-      case "Completado":
-        return <span className="badge bg-success px-3 py-2">{estado}</span>;
-      case "Pendiente":
-        return <span className="badge bg-warning text-dark px-3 py-2">{estado}</span>;
-      case "Cancelado":
-        return <span className="badge bg-danger px-3 py-2">{estado}</span>;
-      default:
-        return <span className="badge bg-secondary px-3 py-2">{estado}</span>;
-    }
+   const getEstadoBadge = (estado) => {
+    return <span className={`badge bg-${estado.color}`}>{estado.nombre_estado}</span>;
   };
 
-  const pagosFiltrados = pagos.filter((p) => {
+  const comprobanteFiltrados = comprobantes.filter((c) => {
     return (
-      (filtroDni ? p.dni.includes(filtroDni) : true) &&
-      (filtroEstado ? p.estado === filtroEstado : true) &&
-      (filtroUsuario ? p.usuario === filtroUsuario : true)
+      (filtroDni ? c.DNI.includes(filtroDni) : true) &&
+      (filtroEstado ? c.estado === filtroEstado : true) &&
+      (filtroUsuario ? c.usuario === filtroUsuario : true)
     );
   });
 
   const usuarios = [...new Set(pagos.map((p) => p.usuario))];
+
+    const handdleGuardarEdicion = async (e) => {
+    e.preventDefault();
+    if (!editandoPago) return;
+
+    const token = localStorage.getItem("access_token");
+    const formData = new FormData();
+
+    // Campos que SÍ existen en tu modelo Comprobante:
+    formData.append("importe", nuevoPago.monto);
+    formData.append("observacion", nuevoPago.observacion);
+    formData.append("pasarela", nuevoPago.pasarelaSeleccionada);
+
+    // FK: tipopago (id_tipo_pago en la BD)
+    if (nuevoPago.metodoPago) {
+      formData.append("tipopago_id", nuevoPago.metodoPago);
+    }
+
+    // Archivo (opcional)
+    if (nuevoPago.comprobanteFile) {
+      formData.append("urlarchivo", nuevoPago.comprobanteFile);
+    }
+
+    try {
+      await axios.put(
+        `http://localhost:8000/comprobantes-update/${editandoPago}/`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          }
+        }
+      );
+
+      await fetchComprobante();
+      alert("Comprobante editado correctamente ✔");
+
+      resetNuevoPago();
+      setEditandoPago(null);
+
+    } catch (err) {
+      console.error(err);
+      alert("Error guardando la edición");
+    }
+  };
+
+  const handdleAprobarPago = async(id_comprobante) => {
+    const token = localStorage.getItem('access_token');
+    const formData = new FormData();
+    formData.append("estadopago_id", 1);
+    
+    try {
+      await axios.put("http://localhost:8000/comprobantes-update/" + id_comprobante + "/", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    
+      await fetchComprobante();
+      alert("Pago aprobado con éxito");
+    
+    } catch (err) {
+      console.error(err);
+      alert("Error enviando comprobante");
+    }
+    };
+
+    const abrirModalRechazo = (id) => {
+    setComprobanteSeleccionado(id);
+    setShowModal(true);
+    };
+
+
+    const handdleAnularPago = async () => {
+      if (!comprobanteSeleccionado) return;
+
+      const token = localStorage.getItem("access_token");
+      const formData = new FormData();
+
+      formData.append("estadopago_id", 3);  // Rechazado
+      formData.append("observacion", observacion);
+
+      try {
+        await axios.put(
+          "http://localhost:8000/comprobantes-update/" + comprobanteSeleccionado + "/",
+          formData,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        await fetchComprobante();
+        alert("Pago rechazado");
+
+        // reset
+        setShowModal(false);
+        setObservacion("");
+        setComprobanteSeleccionado(null);
+
+      } catch (err) {
+        console.error(err);
+        alert("Error enviando comprobante");
+      }
+    };
+
+
+  if (error) return <p className="text-danger">{error}</p>;
 
   return (
       <div className="container mt-5">
@@ -304,8 +457,8 @@ export default function RegistroPagos() {
           <div className="card-body">
             <form
               className="row g-3"
-              onSubmit={editandoPago ? guardarEdicion : agregarPago}
-            >
+              onSubmit={editandoPago ? handdleGuardarEdicion : agregarPago}>
+
               <div className="col-md-3">
                 <label className="form-label">DNI del Alumno *</label>
                 <input
@@ -314,13 +467,13 @@ export default function RegistroPagos() {
                   value={nuevoPago.dni}
                   onChange={(e) => {
                     const dni = e.target.value;
-                    const alumno = alumnosDummy.find((a) => a.dni === dni);
+                    const alumno = alumnos.find((a) => a.DNI == dni);
                     if (alumno) {
                       setNuevoPago((p) => ({
                         ...p,
                         dni,
                         alumnoId: alumno.id,
-                        alumnoNombre: alumno.nombre,
+                        alumnoNombre: alumno.nombre_alumno + " " + alumno.apellido_alumno,
                       }));
                     } else {
                       setNuevoPago((p) => ({
@@ -384,23 +537,6 @@ export default function RegistroPagos() {
                 </select>
               </div>
 
-              <div className="col-md-3">
-                <label className="form-label">Cuota *</label>
-                <select
-                  className="form-select"
-                  value={nuevoPago.cuotaId}
-                  onChange={(e) => actualizarMontoPorCuota(e.target.value)}
-                  required
-                >
-                  <option value="">Selecciona cuota</option>
-                  {cuotasDummy.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.descripcion} - ${c.importe}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div className="col-md-2">
                 <label className="form-label">Monto *</label>
                 <input
@@ -428,9 +564,11 @@ export default function RegistroPagos() {
                   required
                 >
                   <option value="">Selecciona método</option>
-                  <option value="Efectivo">Efectivo</option>
-                  <option value="Tarjeta">Tarjeta</option>
-                  <option value="Transferencia">Transferencia</option>
+                  {tiposPagos.map((tp) => (
+                    <option key={tp.id} value={tp.id}>
+                      {tp.tipopago}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -469,7 +607,6 @@ export default function RegistroPagos() {
                     !nuevoPago.dni ||
                     !nuevoPago.alumnoNombre ||
                     !nuevoPago.periodo ||
-                    !nuevoPago.cuotaId ||
                     !nuevoPago.metodoPago ||
                     nuevoPago.monto <= 0 ||
                     !nuevoPago.carrera
@@ -485,7 +622,6 @@ export default function RegistroPagos() {
                     !nuevoPago.dni ||
                     !nuevoPago.alumnoNombre ||
                     !nuevoPago.periodo ||
-                    !nuevoPago.cuotaId ||
                     !nuevoPago.metodoPago ||
                     nuevoPago.monto <= 0 ||
                     !nuevoPago.carrera
@@ -565,7 +701,6 @@ export default function RegistroPagos() {
                 <th>Monto</th>
                 <th>Método</th>
                 <th>Periodo</th>
-                <th>Cuota</th>
                 <th>Cupón</th>
                 <th>Pasarela</th>
                 <th>Estado</th>
@@ -573,55 +708,46 @@ export default function RegistroPagos() {
               </tr>
             </thead>
             <tbody>
-              {pagosFiltrados.length > 0 ? (
-                pagosFiltrados.map((p) => (
-                  <tr key={p.id} className={p.anulado ? "table-danger" : ""}>
-                    <td>{p.dni}</td>
-                    <td>{p.alumno}</td>
-                    <td>{p.carrera}</td>
-                    <td className="text-end">${p.monto.toFixed(2)}</td>
-                    <td>{p.metodoPago}</td>
-                    <td>{p.periodo}</td>
-                    <td>{p.cuota}</td>
-                    <td>{p.cupón}</td>
-                    <td>{p.pasarela || "—"}</td>
-                    <td>{getEstadoBadge(p.estado, p.anulado)}</td>
+              {comprobantes.length > 0 ? (
+                comprobantes.map((c) => (
+                  <tr key={c.id}>
+                    <td>{c.pago.alumno.DNI}</td>
+                    <td>{c.pago.alumno.nombre_alumno} {c.pago.alumno.apellido_alumno}</td>
+                    <td>{c.pago.alumno.carrera}</td>
+                    <td className="text-end">${c.importe.toFixed(2)}</td>
+                    <td>{c.tipopago.tipopago}</td>
+                    <td>{c.pago.fecha}</td>
+                    <td>{c.cupon}</td>
+                    <td>{c.pasarela || "—"}</td>
+                    <td>{getEstadoBadge(c.estadopago)}</td>
                     <td>
                       <div className="btn-group">
                         <button
                           className="btn btn-sm btn-info"
-                          onClick={() => setVerDetalle(p)}
+                          onClick={() => setVerDetalle(c)}
                         >
                           <FaEye />
                         </button>
-                        {!p.anulado && p.estado === "Pendiente" && (
+                        {c.estadopago.id === 4 && (
                           <button
                             className="btn btn-sm btn-success"
-                            onClick={() =>
-                              setPagos((prev) =>
-                                prev.map((item) =>
-                                  item.id === p.id
-                                    ? { ...item, estado: "Completado" }
-                                    : item
-                                )
-                              )
-                            }
+                            onClick={() => handdleAprobarPago(c.id_comprobante)}
                           >
                             Aprobar
                           </button>
                         )}
-                        {!p.anulado && (
+                        {c.estadopago.id != 3 && (
                           <button
                             className="btn btn-sm btn-danger"
-                            onClick={() => anularPago(p)}
+                            onClick={() => abrirModalRechazo(c.id_comprobante)}
                           >
                             <FaBan />
                           </button>
                         )}
-                        {!p.anulado && (
+                        {!c.anulado && (
                           <button
                             className="btn btn-sm btn-warning"
-                            onClick={() => abrirEdicion(p)}
+                            onClick={() => abrirEdicion(c)}
                           >
                             <FaEdit />
                           </button>
@@ -722,6 +848,43 @@ export default function RegistroPagos() {
             </div>
           </div>
         )}
-      </div>
+
+          {showModal && (
+        <div className="modal fade show" style={{ display: "block" }}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              
+              <div className="modal-header">
+                <h5 className="modal-title">Rechazar comprobante</h5>
+                <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
+              </div>
+
+              <div className="modal-body">
+                <label>Motivo del rechazo:</label>
+                <textarea
+                  className="form-control"
+                  rows="3"
+                  value={observacion}
+                  onChange={(e) => setObservacion(e.target.value)}
+                ></textarea>
+              </div>
+
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+                  Cancelar
+                </button>
+
+                <button className="btn btn-danger" onClick={handdleAnularPago}>
+                  Rechazar Pago
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      </div> 
   );
 }
+

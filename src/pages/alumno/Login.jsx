@@ -22,8 +22,8 @@ export default function Login() {
       const user = await getCurrentUser(data.access);
 
       // Redirigimos según el rol
-      if (user.rol === 'alumno') navigate('/estado-cuenta');
-      else if (user.rol === 'admin') navigate('/admin/revisar-comprobantes');
+      if (user.rol === 'alumno') navigate('/alumno');
+      else if (user.rol === 'admin') navigate('/admin');
       else if (user.rol === 'cajero') navigate('/cajero');
       else navigate('/'); // fallback
     } catch (err) {

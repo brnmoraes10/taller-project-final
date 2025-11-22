@@ -90,16 +90,13 @@ class PlanPagoAlumno(models.Model):
 # ======================================
 class Pago(models.Model):
     alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE)
-
     fecha = models.DateField()
     fecha_ven = models.DateField(null=True)
     monto = models.DecimalField(max_digits=10, decimal_places=2)
     descripcion = models.CharField(max_length=255)
     aprobado = models.BooleanField(default=False)
-
     descuento = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     recargo = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-
     detalle_planes_pago_cuota_alumno = models.CharField(max_length=255, null=True, blank=True)
     estado_registro = models.IntegerField(default=1)
     id_cupon_pago_cuota = models.IntegerField(null=True, blank=True)
@@ -150,7 +147,6 @@ class Pago(models.Model):
 # ======================================
 class Comprobante(models.Model):
     id_comprobante = models.AutoField(primary_key=True)
-    id_tipo_pago = models.IntegerField(null=True, blank=True)
     archivo = models.CharField(max_length=100, null=True, blank=True)
     aprobado = models.BooleanField(default=False)
     cupon = models.CharField(max_length=100, null=True, blank=True)
@@ -162,11 +158,13 @@ class Comprobante(models.Model):
     user_valida = models.CharField(max_length=100, null=True, blank=True)
     fecha_validado = models.DateField(null=True, blank=True)
     observacion = models.CharField(max_length=200, null=True, blank=True)
-    id_estado = models.IntegerField(null=True, blank=True, db_column='id_estado')
     urlarchivo = models.FileField(upload_to='comprobantes/', null=True, blank=True)
+    pasarela = models.CharField(max_length=100, null=True, blank=True)
 
     # FK REAL (columna: pago_id)
     pago = models.ForeignKey(Pago, on_delete=models.CASCADE, db_column='id_pago')
+    tipopago = models.ForeignKey(TipoPago, on_delete=models.SET_NULL, null=True, blank=True, db_column='id_tipo_pago')
+    estadopago = models.ForeignKey(EstadoPago, on_delete=models.SET_NULL, null=True, blank=True, db_column='id_estado')
 
     def __str__(self):
         return f"Comprobante {self.id}"
